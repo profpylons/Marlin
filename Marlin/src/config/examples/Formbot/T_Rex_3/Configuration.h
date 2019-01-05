@@ -69,7 +69,7 @@
 // config/examples/SCARA and customize for your machine.
 //
 
-#define ICSP_PORT_SWITCHES // If ICSP_PORT_SWITCHES is defined, those pins become filament runout sensors
+//#define ICSP_PORT_SWITCHES // If ICSP_PORT_SWITCHES is defined, those pins become filament runout sensors
                            // (But the SD Memory card won't work and is turned off!!!)
 
 
