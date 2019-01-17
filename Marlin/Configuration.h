@@ -285,13 +285,13 @@
 // The offset has to be X=0, Y=0 for the extruder 0 hotend (default extruder).
 // For the other hotends it is their distance from the extruder 0 hotend.
   #if ENABLED(TREX3)
-    #define HOTEND_OFFSET_X {0.0, 438.5} // (mm) relative X-offset for each nozzle
+    #define HOTEND_OFFSET_X {0.0, 438.11} // (mm) relative X-offset for each nozzle
   #else
     #define HOTEND_OFFSET_X {0.0, 442.0} // (mm) relative X-offset for each nozzle
   #endif
 //#define HOTEND_OFFSET_X {0.0, 20.00} // (mm) relative X-offset for each nozzle
-//#define HOTEND_OFFSET_Y {0.0, 5.00}  // (mm) relative Y-offset for each nozzle
-//#define HOTEND_OFFSET_Z {0.0, 0.00}  // (mm) relative Z-offset for each nozzle
+#define HOTEND_OFFSET_Y {0.0, -0.10}  // (mm) relative Y-offset for each nozzle
+#define HOTEND_OFFSET_Z {0.00, 0.10}  // (mm) relative Z-offset for each nozzle
 
 // @section machine
 
@@ -912,7 +912,7 @@
 #if ENABLED(TREX3)
   #define X_PROBE_OFFSET_FROM_EXTRUDER -3      // X offset: -left  +right  [of the nozzle]
   #define Y_PROBE_OFFSET_FROM_EXTRUDER 31      // Y offset: -front +behind [the nozzle]
-  #define Z_PROBE_OFFSET_FROM_EXTRUDER -1.5   // Z offset: -below +above  [the nozzle]
+  #define Z_PROBE_OFFSET_FROM_EXTRUDER -1.750  // Z offset: -below +above  [the nozzle]
 #else
   #define X_PROBE_OFFSET_FROM_EXTRUDER -7  // X offset: -left  +right  [of the nozzle]
   #define Y_PROBE_OFFSET_FROM_EXTRUDER 29  // Y offset: -front +behind [the nozzle]
