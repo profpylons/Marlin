@@ -374,7 +374,7 @@
     #define X1_MIN_POS X_MIN_POS     // set minimum to ensure first x-carriage doesn't hit the parked second X-carriage
     #define X1_MAX_POS X_BED_SIZE + 10   // set maximum to ensure first x-carriage doesn't hit the parked second X-carriage
     #define X2_MIN_POS 0     // set minimum to ensure second x-carriage doesn't hit the parked first X-carriage
-    #define X2_MAX_POS 446            // set maximum to the distance between toolheads when both heads are homed
+    #define X2_MAX_POS 433.3            // set maximum to the distance between toolheads when both heads are homed
   #else
     
     #define X1_MIN_POS X_MIN_POS     // set minimum to ensure first x-carriage doesn't hit the parked second X-carriage
