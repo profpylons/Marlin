@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (C) 2016 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
@@ -49,18 +49,6 @@
 //
 // Estimate the amount of time the Stepper ISR will take to execute
 //
-
-#ifndef MINIMUM_STEPPER_PULSE
-  #define MINIMUM_STEPPER_PULSE 0UL
-#endif
-
-#ifndef MAXIMUM_STEPPER_RATE
-  #if MINIMUM_STEPPER_PULSE
-    #define MAXIMUM_STEPPER_RATE (1000000UL / (2UL * (unsigned long)(MINIMUM_STEPPER_PULSE)))
-  #else
-    #define MAXIMUM_STEPPER_RATE 500000UL
-  #endif
-#endif
 
 #ifdef CPU_32_BIT
 
@@ -168,9 +156,11 @@
 #define MIN_ISR_LOOP_CYCLES (ISR_X_STEPPER_CYCLES + ISR_Y_STEPPER_CYCLES + ISR_Z_STEPPER_CYCLES + ISR_E_STEPPER_CYCLES + ISR_MIXING_STEPPER_CYCLES)
 
 // Calculate the minimum MPU cycles needed per pulse to enforce, limited to the max stepper rate
-#define _MIN_STEPPER_PULSE_CYCLES(N) MAX((unsigned long)((F_CPU) / (MAXIMUM_STEPPER_RATE)), ((F_CPU) / 500000UL) * (N))
+#define _MIN_STEPPER_PULSE_CYCLES(N) MAX(uint32_t((F_CPU) / (MAXIMUM_STEPPER_RATE)), ((F_CPU) / 500000UL) * (N))
 #if MINIMUM_STEPPER_PULSE
-  #define MIN_STEPPER_PULSE_CYCLES _MIN_STEPPER_PULSE_CYCLES((unsigned long)(MINIMUM_STEPPER_PULSE))
+  #define MIN_STEPPER_PULSE_CYCLES _MIN_STEPPER_PULSE_CYCLES(uint32_t(MINIMUM_STEPPER_PULSE))
+#elif HAS_DRIVER(LV8729)
+  #define MIN_STEPPER_PULSE_CYCLES uint32_t((((F_CPU) - 1) / 2000000) + 1) // 0.5µs, aka 500ns
 #else
   #define MIN_STEPPER_PULSE_CYCLES _MIN_STEPPER_PULSE_CYCLES(1UL)
 #endif
@@ -179,7 +169,11 @@
 // adding the "start stepper pulse" code section execution cycles to account for that not all
 // pulses start at the beginning of the loop, so an extra time must be added to compensate so
 // the last generated pulse (usually the extruder stepper) has the right length
-#define MIN_PULSE_TICKS (((PULSE_TIMER_TICKS_PER_US) * (unsigned long)(MINIMUM_STEPPER_PULSE)) + ((MIN_ISR_START_LOOP_CYCLES) / (unsigned long)(PULSE_TIMER_PRESCALE)))
+#if HAS_DRIVER(LV8729)
+  #define MIN_PULSE_TICKS ((((PULSE_TIMER_TICKS_PER_US) + 1) / 2) + ((MIN_ISR_START_LOOP_CYCLES) / uint32_t(PULSE_TIMER_PRESCALE)))
+#else
+  #define MIN_PULSE_TICKS (((PULSE_TIMER_TICKS_PER_US) * uint32_t(MINIMUM_STEPPER_PULSE)) + ((MIN_ISR_START_LOOP_CYCLES) / uint32_t(PULSE_TIMER_PRESCALE)))
+#endif
 
 // Calculate the extra ticks of the PULSE timer between step pulses
 #define ADDED_STEP_TICKS (((MIN_STEPPER_PULSE_CYCLES) / (PULSE_TIMER_PRESCALE)) - (MIN_PULSE_TICKS))
@@ -235,14 +229,14 @@
   #include "speed_lookuptable.h"
 #endif
 
-#include "../module/planner.h"
+#include "planner.h"
 #include "../core/language.h"
 
 class Stepper {
 
   public:
 
-    #if ENABLED(X_DUAL_ENDSTOPS) || ENABLED(Y_DUAL_ENDSTOPS) || Z_MULTI_ENDSTOPS || ENABLED(Z_STEPPER_AUTO_ALIGN)
+    #if HAS_EXTRA_ENDSTOPS || ENABLED(Z_STEPPER_AUTO_ALIGN)
       static bool separate_multi_axis;
     #endif
 
@@ -251,6 +245,7 @@ class Stepper {
         #define PWM_MOTOR_CURRENT DEFAULT_PWM_MOTOR_CURRENT
       #endif
       static uint32_t motor_current_setting[3];
+      static bool initialized;
     #endif
 
   private:
@@ -278,7 +273,7 @@ class Stepper {
     #if Z_MULTI_ENDSTOPS || ENABLED(Z_STEPPER_AUTO_ALIGN)
       static bool locked_Z_motor, locked_Z2_motor;
     #endif
-    #if ENABLED(Z_TRIPLE_ENDSTOPS) || (ENABLED(Z_STEPPER_AUTO_ALIGN) && ENABLED(Z_TRIPLE_STEPPER_DRIVERS))
+    #if ENABLED(Z_TRIPLE_ENDSTOPS) || BOTH(Z_STEPPER_AUTO_ALIGN, Z_TRIPLE_STEPPER_DRIVERS)
       static bool locked_Z3_motor;
     #endif
 
@@ -419,7 +414,7 @@ class Stepper {
       static void microstep_readings();
     #endif
 
-    #if ENABLED(X_DUAL_ENDSTOPS) || ENABLED(Y_DUAL_ENDSTOPS) || Z_MULTI_ENDSTOPS || ENABLED(Z_STEPPER_AUTO_ALIGN)
+    #if HAS_EXTRA_ENDSTOPS || ENABLED(Z_STEPPER_AUTO_ALIGN)
       FORCE_INLINE static void set_separate_multi_axis(const bool state) { separate_multi_axis = state; }
     #endif
     #if ENABLED(X_DUAL_ENDSTOPS)
@@ -434,7 +429,7 @@ class Stepper {
       FORCE_INLINE static void set_z_lock(const bool state) { locked_Z_motor = state; }
       FORCE_INLINE static void set_z2_lock(const bool state) { locked_Z2_motor = state; }
     #endif
-    #if ENABLED(Z_TRIPLE_ENDSTOPS) || (ENABLED(Z_STEPPER_AUTO_ALIGN) && ENABLED(Z_TRIPLE_STEPPER_DRIVERS))
+    #if ENABLED(Z_TRIPLE_ENDSTOPS) || BOTH(Z_STEPPER_AUTO_ALIGN, Z_TRIPLE_STEPPER_DRIVERS)
       FORCE_INLINE static void set_z3_lock(const bool state) { locked_Z3_motor = state; }
     #endif
 
