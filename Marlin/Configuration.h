@@ -54,7 +54,7 @@
 
 //#define tallVersion
 
-#define ABL_Bilinear
+//#define ABL_Bilinear
 /*
  * Enables a filament sensor plugged into the laser pin. Disables the laser
  */
@@ -590,7 +590,7 @@
  */
 //#define PIDTEMPBED
 
-//#define BED_LIMIT_SWITCHING
+#define BED_LIMIT_SWITCHING
 
 /**
  * Max Bed Power
@@ -617,9 +617,9 @@
   //#define DEFAULT_bedKd 1675.16
 
   // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
-  #define DEFAULT_bedKp 248.47
-  #define DEFAULT_bedKi 42.72
-  #define DEFAULT_bedKd 361.31
+  #define DEFAULT_bedKp 377.41
+  #define DEFAULT_bedKi 68.76
+  #define DEFAULT_bedKd 517.90
 #endif // PIDTEMPBED
 
 // @section extruder
@@ -825,7 +825,7 @@
 
 
 #if(ENABLED(Y_2208) || ENABLED(Y_4988) || ENABLED(Y_S109))
-  #define Y_STEPSMM 80
+  #define Y_STEPSMM 160
 #else
   #define Y_STEPSMM 160
 #endif
